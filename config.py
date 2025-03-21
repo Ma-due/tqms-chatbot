@@ -1,4 +1,4 @@
-answer_examples = [
+example_answer = [
     {
         "input": "소득은 어떻게 구분되나요?",
         "answer": """소득세법 제 4조(소득의 구분)에 따르면 소득은 아래와 같이 구분됩니다.
