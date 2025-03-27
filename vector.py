@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import Docx2txtLoader, csv_loader
+from langchain_community.document_loaders import Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
@@ -17,6 +17,14 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 loader = Docx2txtLoader('./tax.docx')
 document_list = loader.load_and_split(text_splitter=text_splitter)
+
+# 분할된 청크 확인
+print(f"총 분할된 청크 수: {len(document_list)}")
+for i, doc in enumerate(document_list):
+    print(f"\n청크 {i + 1}:")
+    print(f"길이: {len(doc.page_content)} 자")
+    print(f"내용 미리보기: {doc.page_content[:200]}...")  # 처음 200자만 출력
+    print("-" * 50)
 
 embedding = OpenAIEmbeddings(model='text-embedding-3-large')
 index_name = 'test'

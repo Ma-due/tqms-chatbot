@@ -1,5 +1,5 @@
-# chains.py
-from langchain.chains import create_retrieval_chain, create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
 from config import example_answer, system_prompt, human_dictionary
