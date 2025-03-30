@@ -2,7 +2,7 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
-from config import example_answer, system_prompt, human_dictionary
+from config import example_answer, tqms_system_prompt, human_dictionary
 from utils import get_session_history
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
@@ -32,7 +32,7 @@ def get_rag_chain(llm, history_aware_retriever):
 
     qa_prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", system_prompt),
+            ("system", tqms_system_prompt),
             few_shot_prompt,
             MessagesPlaceholder("chat_history"),
             ("human", "{input}"),
