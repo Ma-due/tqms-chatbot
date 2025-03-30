@@ -1,8 +1,6 @@
 import pandas as pd
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
-from langchain_pinecone import PineconeVectorStore
-from pinecone import Pinecone
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
 import os
@@ -12,14 +10,14 @@ load_dotenv()
 os.environ["PINECONE_API_KEY"] = os.getenv("PINECONE_API_KEY")
 
 # 엑셀 파일 경로
-file_path = r'C:\Users\Administrator\PycharmProjects\tqms-chatbot\TRBL_REPORT_INFO_250321.xlsx'
+file_path = r'./TRBL_REPORT_INFO_250321.xlsx'
 
 # "장애보고서" 시트 읽기
 sheet_name = "장애보고서"
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 
-# 원하는 컬럼만 선택
-columns_to_show = ['TRBL_ACCP_NO', 'TRBLTITLCNTN', 'ISACCUSTCONM', 'TRBLPRTCCAUSCNTN', 'SVCNM']
+# 원하는 컬럼만 선택 (TRBLPRSTCNTN 추가)
+columns_to_show = ['TRBL_ACCP_NO', 'TRBLTITLCNTN', 'ISACCUSTCONM', 'TRBLPRTCCAUSCNTN', 'SVCNM', 'TRBLPRSTCNTN']
 filtered_df = df[columns_to_show]
 
 # 2행(인덱스 1) 제외
@@ -30,20 +28,18 @@ documents = []
 for index, row in filtered_df.iterrows():
     row_list = row.tolist()  # 행을 리스트로 변환
 
-    # 리스트를 문자열로 변환 (page_content)
+    # page_content: TRBLTITLCNTN, TRBLPRTCCAUSCNTN, TRBLPRSTCNTN만 포함
     content = (
-        f"TRBL_ACCP_NO: {row_list[0]}\n"
         f"TRBLTITLCNTN: {row_list[1]}\n"
-        f"ISACCUSTCONM: {row_list[2]}\n"
         f"TRBLPRTCCAUSCNTN: {row_list[3]}\n"
-        f"SVCNM: {row_list[4]}"
+        f"TRBLPRSTCNTN: {row_list[5]}"
     )
 
-    # 메타데이터 추가
+    # 메타데이터: TRBL_ACCP_NO, ISACCUSTCONM, SVCNM 포함
     metadata = {
-        "source": sheet_name,
-        "row_index": index,
-        "trbl_accp_no": str(row_list[0])  # 검색용으로 고유 ID 추가
+        "trbl_accp_no": str(row_list[0]),  # 검색용 고유 ID
+        "isaccustconm": str(row_list[2]),  # ISACCUSTCONM
+        "svcnm": str(row_list[4])          # SVCNM
     }
 
     # Document 객체 생성
@@ -52,28 +48,14 @@ for index, row in filtered_df.iterrows():
 
 # 출력으로 확인 (선택 사항)
 print(f"총 문서 수: {len(documents)}")
-for i, doc in enumerate(documents[:2]):  # 처음 2개만 미리보기
+for i, doc in enumerate(documents[:10]):  # 처음 2개만 미리보기
     print(f"\n문서 {i}:")
     print("내용:", doc.page_content)
     print("메타데이터:", doc.metadata)
 
-# Pinecone 설정 및 업로드
+# Chroma 설정 및 업로드
 embedding = OpenAIEmbeddings(model="text-embedding-3-large")
 persist_directory = "./chroma_db"
-"""
-index_name = "tqms"
-pc = Pinecone()
-index = pc.Index(index_name)
-
-# 기존 데이터 삭제 (선택 사항)
-index.delete(delete_all=True)  # 주의: 모든 데이터 지움
-
-# Pinecone에 문서 업로드
-# database = PineconeVectorStore.from_documents(documents, embedding, index_name=index_name)
-# 인덱스 상태 확인
-print("\nPinecone 인덱스 상태:")
-print(index.describe_index_stats())
-"""
 
 database = Chroma.from_documents(
     documents=documents,
