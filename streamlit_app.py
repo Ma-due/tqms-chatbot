@@ -1,5 +1,5 @@
 import streamlit as st
-from lg.graph import get_ai_response
+from graph import get_ai_response
 
 def init_session_state():
     if "messages" not in st.session_state:
@@ -12,14 +12,13 @@ def display_chat_history():
 
 def handle_user_input():
     if prompt := st.chat_input("질문을 입력하세요"):
-        # 사용자 메시지 표시
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # AI 응답 생성 및 표시
+        # get_ai_response로 바로 처리
         with st.chat_message("assistant"):
-            response = get_ai_response(prompt)
+            response = get_ai_response(prompt)  # routing_info 제거
             st.markdown(response)
             st.session_state.messages.append({"role": "assistant", "content": response})
 
@@ -30,4 +29,4 @@ def main():
     handle_user_input()
 
 if __name__ == "__main__":
-    main() 
+    main()
